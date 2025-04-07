@@ -6,10 +6,6 @@ dotenv.config();
 const app = express();
 app.use(express.json());
 
-const GUPSHUP_API = "https://api.gupshup.io/sm/api/v1/msg";
-const GUPSHUP_TOKEN = "YOUR_GUPSHUP_API_KEY"; // Replace this
-const SOURCE_NUMBER = "YOUR_GUPSHUP_SOURCE_NUMBER"; // From Gupshup App
-
 app.post("/webhook", async (req, res) => {
   const { payload } = req.body;
 
@@ -27,29 +23,29 @@ app.post("/webhook", async (req, res) => {
     const info = data[incomingMsg];
     const reply = `${incomingMsg.toUpperCase()} 💰 $${info.usd}\n24h Change: ${info.usd_24h_change.toFixed(2)}%`;
 
-    await axios.post(GUPSHUP_API, null, {
+    await axios.post(process.env.GUPSHUP_API, null, {
       params: {
         channel: "whatsapp",
-        source: SOURCE_NUMBER,
+        source: process.env.SOURCE_NUMBER,
         destination: phone,
-        message: reply,
+        message: JSON.stringify({ type: "text", text: reply }),
       },
       headers: {
-        apikey: GUPSHUP_TOKEN,
+        apikey: process.env.GUPSHUP_TOKEN,
         "Content-Type": "application/x-www-form-urlencoded"
       }
     });
 
   } catch (e) {
-    await axios.post(GUPSHUP_API, null, {
+    await axios.post(process.env.GUPSHUP_API, null, {
       params: {
         channel: "whatsapp",
-        source: SOURCE_NUMBER,
+        source: process.env.SOURCE_NUMBER,
         destination: phone,
-        message: `Sorry! "${incomingMsg}" not found. Try "btc" or "eth".`,
+        message: JSON.stringify({ type: "text", text: `Sorry! "${incomingMsg}" not found. Try "btc" or "eth".` }),
       },
       headers: {
-        apikey: GUPSHUP_TOKEN,
+        apikey: process.env.GUPSHUP_TOKEN,
         "Content-Type": "application/x-www-form-urlencoded"
       }
     });
@@ -58,7 +54,7 @@ app.post("/webhook", async (req, res) => {
   res.sendStatus(200);
 });
 
-app.get("/", (req, res) => res.send("CryptoBot is live!"));
+app.get("/", (req, res) => res.send("CryptoBot is live! 🚀"));
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Running on port ${PORT}`));
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
